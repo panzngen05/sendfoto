@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <!-- Meta viewport ini MENCEGAH zoom saat ngetik di HP dan mengunci lebar -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RAW.PICS - Full Responsive Brutalism</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] },
+                    colors: { brutalYellow: '#FFD60A', brutalBlue: '#3A86FF', brutalRed: '#FF006E' },
+                    boxShadow: {
+                        'brutal-sm': '4px 4px 0px 0px #000000',
+                        'brutal': '6px 6px 0px 0px #000000',
+                        'brutal-lg': '12px 12px 0px 0px #000000',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons & Socket.io Client -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        .pattern-dots { background-image: radial-gradient(black 2px, transparent 2px); background-size: 20px 20px; }
+        .brutal-btn { transition: all 0.1s ease; }
+        .brutal-btn:active { transform: translate(2px, 2px) !important; box-shadow: 0px 0px 0px 0px #000000 !important; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f0f0f0; border-left: 2px solid black; }
+        ::-webkit-scrollbar-thumb { background: black; }
+
+        /* Kunci responsivitas Mobile vs Desktop */
+        @media (max-width: 767px) {
+            .mobile-hide { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-brutalYellow font-sans overflow-hidden antialiased selection:bg-brutalRed selection:text-white w-full h-[100dvh]">
+
+    <!-- ==================== TAMPILAN LOGIN ==================== -->
+    <div id="login-view" class="h-full w-full p-4 flex items-center justify-center relative">
+        <div class="absolute top-10 left-10 w-32 h-32 bg-brutalBlue border-4 border-black rounded-full mix-blend-multiply opacity-80 animate-pulse hidden md:block"></div>
+        <div class="absolute bottom-10 right-10 w-48 h-48 bg-brutalRed border-4 border-black rotate-12 mix-blend-multiply opacity-80 hidden md:block"></div>
+        
+        <div class="relative w-full max-w-md bg-white border-4 border-black shadow-brutal p-6 md:p-8 -rotate-1 md:-rotate-2">
+            <div class="absolute -top-4 -right-4 bg-brutalRed text-black font-black uppercase text-xs md:text-sm px-3 py-1 border-4 border-black shadow-brutal-sm rotate-12 z-20">PRIVATE!</div>
+            
+            <div class="mb-6 md:mb-8 border-b-4 border-black pb-4 flex items-center gap-3">
+                <i data-lucide="zap" class="w-8 h-8 md:w-10 md:h-10 text-brutalYellow fill-brutalYellow stroke-black stroke-[3px]"></i>
+                <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tighter">RAW.CHAT</h1>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div id="login-error" class="hidden bg-brutalRed text-white font-bold p-3 border-4 border-black uppercase text-xs md:text-sm"></div>
+                
+                <div>
+                    <label class="block font-bold text-base md:text-lg mb-1 uppercase">Nama Pengguna</label>
+                    <input type="text" id="input-username" placeholder="NAMA KAMU" required class="w-full border-4 border-black shadow-brutal-sm px-4 py-3 font-bold text-base md:text-lg bg-white focus:outline-none focus:bg-[#f8f8f8] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-brutal transition-all">
+                </div>
+                
+                <div>
+                    <label class="block font-bold text-base md:text-lg mb-1 uppercase">Kata Sandi</label>
+                    <input type="password" id="input-password" placeholder="••••••••" required class="w-full border-4 border-black shadow-brutal-sm px-4 py-3 font-bold text-base md:text-lg bg-white focus:outline-none focus:bg-[#f8f8f8] focus:-translate-y-1 focus:-translate-x-1 focus:shadow-brutal transition-all">
+                    <p class="text-[10px] md:text-xs font-bold mt-2 text-gray-500 uppercase">*Jika belum ada akun, otomatis terdaftar.</p>
+                </div>
+                
+                <button type="submit" class="brutal-btn w-full mt-4 py-3 md:py-4 text-lg md:text-xl bg-brutalBlue border-4 border-black shadow-brutal font-black uppercase tracking-wider flex items-center justify-center gap-2 text-black">
+                    MASUK SARANG
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== TAMPILAN UTAMA APLIKASI ==================== -->
+    <div id="app-view" class="h-full w-full bg-[#f0f0f0] md:p-4 flex-col hidden">
+        <div class="flex-1 flex flex-col bg-white border-x-0 md:border-4 border-y-0 md:border-y-4 border-black md:shadow-brutal-lg h-full overflow-hidden relative">
+            
+            <!-- Navbar -->
+            <header class="h-16 md:h-20 bg-black text-white border-b-4 border-black flex items-center justify-between px-3 md:px-6 z-20 shrink-0">
+                <div class="flex items-center gap-2 md:gap-4">
+                    <div class="bg-brutalRed p-1.5 md:p-2 border-2 border-white rotate-[-5deg]">
+                        <i data-lucide="zap" class="w-5 h-5 md:w-7 md:h-7 stroke-[3px] text-white"></i>
+                    </div>
+                    <h1 class="text-xl md:text-3xl font-black tracking-tighter">RAW.CHAT</h1>
+                </div>
+
+                <div class="flex items-center gap-2 md:gap-6">
+                    <div class="flex items-center gap-2 md:gap-3">
+                        <div class="text-right hidden sm:block">
+                            <div class="font-bold text-sm md:text-lg leading-tight text-brutalYellow truncate max-w-[100px]" id="my-name-display">Anda</div>
+                            <div class="text-[10px] md:text-xs uppercase font-bold text-brutalBlue">Online</div>
+                        </div>
+                        <div class="w-8 h-8 md:w-12 md:h-12 border-2 md:border-4 border-white rounded-full overflow-hidden shrink-0 bg-brutalBlue">
+                            <img id="my-avatar" src="" alt="Profile" class="w-full h-full object-cover">
+                        </div>
+                        <button onclick="logout()" class="ml-1 md:ml-2 hover:text-brutalRed transition-colors bg-white text-black p-1.5 md:p-2 border-2 border-black rounded-full" title="Keluar">
+                            <i data-lucide="log-out" class="w-4 h-4 md:w-5 md:h-5 stroke-[3px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Area Bawah (Sidebar & Main Chat) -->
+            <div class="flex-1 flex overflow-hidden relative w-full h-full">
+                
+                <!-- Sidebar Member List (Full width di mobile, fix width di desktop) -->
+                <aside id="sidebar" class="w-full md:w-80 lg:w-96 border-r-0 md:border-r-4 border-black bg-white flex flex-col z-10 h-full shrink-0">
+                    <div class="p-3 md:p-4 border-b-4 border-black bg-brutalYellow">
+                        <h2 class="font-black text-lg md:text-xl uppercase mb-2">DAFTAR CREW</h2>
+                        <input type="text" id="search-user" placeholder="CARI TEMAN..." class="w-full border-4 border-black shadow-brutal-sm px-3 py-2 font-bold bg-white focus:outline-none focus:shadow-brutal transition-all text-xs md:text-sm">
+                    </div>
+                    
+                    <div id="users-list" class="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 bg-[#fafafa]">
+                        <!-- List user render di sini -->
+                    </div>
+                </aside>
+
+                <!-- Area Kosong (Hanya muncul di desktop jika belum pilih teman) -->
+                <main id="empty-state" class="hidden md:flex flex-1 flex-col bg-white relative overflow-hidden pattern-dots h-full items-center justify-center z-0">
+                    <div class="absolute inset-0 opacity-[0.03] pointer-events-none"></div>
+                    <div class="text-center p-6 bg-white border-4 border-black shadow-brutal rotate-2 max-w-xs md:max-w-sm">
+                        <i data-lucide="message-square" class="w-12 h-12 md:w-16 md:h-16 stroke-[3px] mx-auto mb-4 text-brutalBlue"></i>
+                        <h2 class="font-black text-xl md:text-3xl uppercase">PILIH TARGET</h2>
+                        <p class="font-bold text-gray-500 mt-2 uppercase text-xs md:text-sm">Pilih teman dari daftar samping untuk mulai ngegas.</p>
+                    </div>
+                </main>
+
+                <!-- Area Chat Utama (Hidden di mobile secara default) -->
+                <main id="chat-area" class="mobile-hide hidden md:flex flex-1 flex-col bg-[#fafafa] relative overflow-hidden pattern-dots h-full w-full z-20">
+                    <div class="absolute inset-0 opacity-[0.03] pointer-events-none"></div>
+                    
+                    <!-- Header Chat -->
+                    <div class="p-2 md:p-4 border-b-4 border-black bg-white flex items-center justify-between z-10 shrink-0 shadow-sm">
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <!-- Tombol Back (Hanya tampil di Mobile) -->
+                            <button onclick="backToSidebar()" class="md:hidden p-1.5 md:p-2 border-2 border-black bg-brutalYellow font-black active:translate-y-1">
+                                <i data-lucide="arrow-left" class="w-5 h-5 stroke-[3px]"></i>
+                            </button>
+                            
+                            <div class="w-8 h-8 md:w-10 md:h-10 border-2 md:border-4 border-black overflow-hidden bg-white shrink-0">
+                                <img id="chat-target-avatar" src="" alt="Target" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h2 id="chat-target-name" class="font-black text-base md:text-xl uppercase leading-none truncate max-w-[120px] sm:max-w-[200px]">TARGET</h2>
+                                <p id="chat-target-status" class="font-bold text-[10px] md:text-xs uppercase tracking-widest text-brutalBlue">Memeriksa...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Container Pesan -->
+                    <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-6 flex flex-col gap-3 md:gap-4 z-10 pb-4 bg-[#fafafa]">
+                        <!-- Pesan render di sini -->
+                    </div>
+
+                    <!-- Form Input Pesan -->
+                    <form id="chat-form" class="p-2 md:p-3 border-t-4 border-black bg-white z-10 flex gap-2 items-end shrink-0">
+                        <button type="button" onclick="openUploadModal()" class="brutal-btn p-2 md:p-3 bg-brutalYellow border-2 md:border-4 border-black shadow-brutal-sm hover:-translate-y-1 hover:shadow-brutal shrink-0 text-black">
+                            <i data-lucide="image" class="w-5 h-5 md:w-6 md:h-6 stroke-[3px]"></i>
+                        </button>
+                        
+                        <div class="flex-1 relative">
+                            <textarea id="message-input" placeholder="KETIK PESAN..." rows="1" class="w-full border-2 md:border-4 border-black p-2 md:p-3 font-bold text-sm md:text-base bg-white focus:outline-none resize-none min-h-[40px] md:min-h-[50px] max-h-[100px]"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="brutal-btn px-3 md:px-4 py-2 md:py-3 bg-brutalRed text-white font-black text-base md:text-lg uppercase tracking-wider border-2 md:border-4 border-black shadow-brutal-sm hover:-translate-y-1 hover:shadow-brutal flex items-center justify-center shrink-0">
+                            <i data-lucide="send" class="w-5 h-5 md:w-6 md:h-6 stroke-[3px]"></i>
+                        </button>
+                    </form>
+                </main>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL UPLOAD ==================== -->
+    <div id="upload-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeUploadModal()"></div>
+        
+        <div class="relative w-full max-w-lg bg-white border-4 border-black shadow-brutal-sm md:shadow-brutal-lg p-5 md:p-6 rotate-1 z-10 flex flex-col" id="upload-modal-content">
+            <button onclick="closeUploadModal()" class="brutal-btn absolute -top-3 -right-3 md:-top-4 md:-right-4 w-8 h-8 md:w-10 md:h-10 bg-white border-4 border-black rounded-full flex items-center justify-center hover:bg-brutalRed hover:text-white z-20">
+                <i data-lucide="x" class="w-4 h-4 md:w-5 md:h-5 stroke-[3px]"></i>
+            </button>
+
+            <h2 class="text-xl md:text-2xl font-black uppercase mb-4 border-b-4 border-black pb-2">KIRIM FOTO</h2>
+
+            <!-- Area Pilih File -->
+            <div id="file-drop-area" class="border-[3px] md:border-[4px] border-dashed border-black bg-[#f8f8f8] p-6 md:p-8 flex flex-col items-center justify-center gap-2 text-center hover:bg-brutalYellow/20 cursor-pointer relative">
+                <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <i data-lucide="upload-cloud" class="w-8 h-8 md:w-10 md:h-10 stroke-[3px] mb-2"></i>
+                <h3 class="font-black text-lg md:text-xl uppercase">Pilih Gambar</h3>
+                <p class="font-bold text-gray-500 text-[10px] md:text-xs uppercase">Maks 10MB</p>
+            </div>
+
+            <!-- Area Preview -->
+            <div id="file-preview-area" class="flex-col gap-3 md:gap-4 hidden">
+                <div class="w-full h-40 md:h-48 border-4 border-black bg-black relative overflow-hidden flex items-center justify-center">
+                    <img id="preview-image" src="" class="max-w-full max-h-full object-contain">
+                </div>
+                <button id="btn-send-photo" class="brutal-btn w-full py-2 md:py-3 bg-brutalYellow border-4 border-black shadow-brutal-sm font-black uppercase text-sm md:text-base tracking-wider text-black">
+                    KIRIM KE TARGET
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        lucide.createIcons();
+
+        const API_URL = window.location.origin + '/api';
+        let socket;
+        let currentUser = null; 
+        let selectedTarget = null; 
+        let onlineUsersMap = {}; 
+        let selectedFile = null;
+
+        const views = {
+            login: document.getElementById('login-view'),
+            app: document.getElementById('app-view'),
+            sidebar: document.getElementById('sidebar'),
+            empty: document.getElementById('empty-state'),
+            chat: document.getElementById('chat-area')
+        };
+        const msgContainer = document.getElementById('messages-container');
+
+        // --- 1. LOGIN LOGIC ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('input-username').value.trim();
+            const password = document.getElementById('input-password').value.trim();
+            const errBox = document.getElementById('login-error');
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    currentUser = { username: data.username, avatar: data.avatar };
+                    document.getElementById('my-name-display').innerText = currentUser.username;
+                    document.getElementById('my-avatar').src = currentUser.avatar;
+                    errBox.classList.add('hidden');
+                    initApp();
+                } else {
+                    errBox.innerText = data.error;
+                    errBox.classList.remove('hidden');
+                }
+            } catch (error) {
+                errBox.innerText = "Gagal terhubung ke server!";
+                errBox.classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            if(socket) socket.disconnect();
+            location.reload(); 
+        }
+
+        // --- 2. INISIALISASI ---
+        function initApp() {
+            views.login.classList.add('hidden');
+            views.app.classList.remove('hidden');
+            views.app.classList.add('flex');
+
+            socket = io();
+            socket.on('connect', () => socket.emit('join', currentUser.username));
+
+            socket.on('users_update', (usersList) => {
+                onlineUsersMap = {};
+                usersList.forEach(u => onlineUsersMap[u.username] = u);
+                renderUserList();
+                updateTargetStatusUI();
+            });
+
+            socket.on('receive_message', (msg) => {
+                if (selectedTarget && 
+                   ((msg.sender === currentUser.username && msg.receiver === selectedTarget) || 
+                    (msg.sender === selectedTarget && msg.receiver === currentUser.username))) {
+                    appendMessageUI(msg);
+                } else if (msg.sender !== currentUser.username) {
+                    const userCard = document.getElementById(`user-card-${msg.sender}`);
+                    if(userCard) {
+                        userCard.classList.add('bg-brutalYellow', 'animate-pulse');
+                        setTimeout(() => userCard.classList.remove('animate-pulse'), 1000);
+                    }
+                }
+            });
+        }
+
+        // --- 3. DAFTAR MEMBER ---
+        function renderUserList(filterText = '') {
+            const listEl = document.getElementById('users-list');
+            listEl.innerHTML = '';
+
+            Object.keys(onlineUsersMap).forEach(username => {
+                if (username === currentUser.username) return;
+                if (filterText && !username.toLowerCase().includes(filterText.toLowerCase())) return;
+
+                const user = onlineUsersMap[username];
+                const isSelected = selectedTarget === username;
+                const statusColor = user.isOnline ? 'bg-brutalBlue' : 'bg-gray-400';
+                const statusText = user.isOnline ? 'Online' : 'Offline';
+
+                const cardHTML = `
+                    <div id="user-card-${username}" onclick="selectUser('${username}')" class="flex items-center gap-2 md:gap-3 p-2 md:p-3 border-[3px] md:border-4 border-black cursor-pointer transition-all ${isSelected ? 'bg-[#e0e0e0] translate-x-2 shadow-[-4px_4px_0px_0px_#000]' : 'bg-white hover:-translate-y-1 hover:shadow-brutal-sm'}">
+                        <div class="w-10 h-10 md:w-12 md:h-12 border-2 md:border-4 border-black overflow-hidden shrink-0 bg-white">
+                            <img src="${user.avatar}" class="w-full h-full object-cover ${!user.isOnline ? 'grayscale opacity-50' : ''}">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-black text-sm md:text-base uppercase truncate">${username}</h3>
+                            <div class="flex items-center gap-1.5 md:gap-2 mt-0.5">
+                                <div class="w-2 h-2 md:w-3 md:h-3 border border-black md:border-2 rounded-full ${statusColor}"></div>
+                                <span class="text-[9px] md:text-[10px] font-bold uppercase text-gray-500">${statusText}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listEl.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        document.getElementById('search-user').addEventListener('input', (e) => renderUserList(e.target.value));
+
+        // --- 4. CHAT LOGIC ---
+        async function selectUser(username) {
+            selectedTarget = username;
+            
+            // LOGIKA RESPONSIVITAS MOBILE
+            // Sembunyikan sidebar di mobile, tampilkan ruang chat
+            views.sidebar.classList.add('mobile-hide');
+            views.empty.classList.add('hidden'); 
+            views.empty.classList.remove('md:flex');
+            
+            views.chat.classList.remove('hidden', 'mobile-hide');
+            views.chat.classList.add('flex');
+
+            document.getElementById('chat-target-name').innerText = username;
+            document.getElementById('chat-target-avatar').src = onlineUsersMap[username].avatar;
+            updateTargetStatusUI();
+            renderUserList(); 
+
+            document.getElementById('message-input').value = '';
+            msgContainer.innerHTML = '<div class="text-center font-bold text-gray-400 text-xs md:text-sm my-4">MEMUAT RIWAYAT...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/messages/${currentUser.username}/${username}`);
+                const history = await res.json();
+                
+                msgContainer.innerHTML = '';
+                if(history.length === 0) {
+                    msgContainer.innerHTML = `<div class="text-center font-bold text-gray-400 text-[10px] md:text-xs my-4 uppercase">Belum ada obrolan dengan ${username}. Gas duluan!</div>`;
+                } else {
+                    history.forEach(appendMessageUI);
+                }
+            } catch(e) {
+                msgContainer.innerHTML = '<div class="text-center font-bold text-brutalRed text-xs md:text-sm my-4">GAGAL MEMUAT PESAN.</div>';
+            }
+        }
+
+        function updateTargetStatusUI() {
+            if(!selectedTarget) return;
+            const statusEl = document.getElementById('chat-target-status');
+            const user = onlineUsersMap[selectedTarget];
+            if(user && user.isOnline) {
+                statusEl.innerText = 'ONLINE SEKARANG';
+                statusEl.classList.replace('text-gray-500', 'text-brutalBlue');
+            } else {
+                statusEl.innerText = 'OFFLINE';
+                statusEl.classList.replace('text-brutalBlue', 'text-gray-500');
+            }
+        }
+
+        // FUNGSI TOMBOL BACK (KHUSUS MOBILE)
+        function backToSidebar() {
+            selectedTarget = null;
+            // Tampilkan sidebar lagi, sembunyikan chat
+            views.sidebar.classList.remove('mobile-hide');
+            views.chat.classList.add('hidden', 'mobile-hide');
+            views.chat.classList.remove('flex');
+            renderUserList();
+        }
+
+        function appendMessageUI(msg) {
+            const isMe = msg.sender === currentUser.username;
+            const senderLabel = isMe ? 'ANDA' : msg.sender;
+            
+            if(msgContainer.innerHTML.includes('Belum ada obrolan')) msgContainer.innerHTML = '';
+
+            let contentHTML = '';
+            if (msg.text) {
+                contentHTML = `
+                    <div class="border-[2px] md:border-[3px] border-black shadow-brutal-sm px-3 py-2 text-xs md:text-sm font-bold relative max-w-[240px] md:max-w-md break-words
+                        ${isMe ? 'bg-brutalYellow text-black rounded-tl-xl rounded-tr-sm rounded-b-xl' : 'bg-white text-black rounded-tr-xl rounded-tl-sm rounded-b-xl'}">
+                        ${msg.text}
+                    </div>
+                `;
+            }
+            if (msg.photo) {
+                const imgUrl = msg.photo.startsWith('http') ? msg.photo : window.location.origin + msg.photo;
+                contentHTML = `
+                    <div class="border-[3px] md:border-4 border-black p-1 bg-white relative max-w-[220px] md:max-w-xs">
+                        <img src="${imgUrl}" class="w-full h-auto object-cover border-2 border-black">
+                    </div>
+                `;
+            }
+
+            const msgHTML = `
+                <div class="flex w-full ${isMe ? 'justify-end' : 'justify-start'} mb-1">
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <span class="text-[8px] md:text-[9px] font-bold mb-1 px-1 opacity-60 uppercase">${senderLabel} • ${msg.timestamp}</span>
+                        ${contentHTML}
+                    </div>
+                </div>
+            `;
+            msgContainer.insertAdjacentHTML('beforeend', msgHTML);
+            msgContainer.scrollTop = msgContainer.scrollHeight; 
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(!selectedTarget) return alert("Pilih target dulu!");
+            
+            const inputEl = document.getElementById('message-input');
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            socket.emit('private_message', {
+                sender: currentUser.username, receiver: selectedTarget, text: text, photo: null
+            });
+            inputEl.value = '';
+        });
+
+        document.getElementById('message-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // --- 5. UPLOAD FOTO ---
+        const modalUI = {
+            wrap: document.getElementById('upload-modal'),
+            drop: document.getElementById('file-drop-area'),
+            preview: document.getElementById('file-preview-area'),
+            img: document.getElementById('preview-image'),
+            input: document.getElementById('file-input'),
+            btn: document.getElementById('btn-send-photo')
+        };
+
+        function openUploadModal() {
+            if(!selectedTarget) return alert("Pilih teman dulu!");
+            modalUI.wrap.classList.remove('hidden');
+        }
+
+        function closeUploadModal() {
+            modalUI.wrap.classList.add('hidden');
+            selectedFile = null;
+            modalUI.input.value = '';
+            modalUI.drop.classList.replace('hidden', 'flex');
+            modalUI.preview.classList.replace('flex', 'hidden');
+            modalUI.btn.innerText = 'KIRIM KE TARGET';
+            modalUI.btn.disabled = false;
+        }
+
+        modalUI.input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    modalUI.img.src = e.target.result;
+                    modalUI.drop.classList.replace('flex', 'hidden');
+                    modalUI.preview.classList.replace('hidden', 'flex');
+                    modalUI.btn.innerText = `KIRIM KE ${selectedTarget.toUpperCase()}`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        modalUI.btn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            modalUI.btn.innerText = 'MENGUNGGAH...';
+            modalUI.btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('photo', selectedFile);
+
+            try {
+                const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if (res.ok && data.photoUrl) {
+                    socket.emit('private_message', {
+                        sender: currentUser.username, receiver: selectedTarget, text: null, photo: data.photoUrl
+                    });
+                    closeUploadModal();
+                } else {
+                    throw new Error('Upload error');
+                }
+            } catch (err) {
+                alert("Upload Gagal!");
+                closeUploadModal();
+            }
+        });
+    </script>
+</body>
+</html>
