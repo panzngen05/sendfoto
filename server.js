@@ -26,7 +26,6 @@ if (!fs.existsSync(uploadDir)) {
 const dbFile = path.join(__dirname, 'database.json');
 let db = { users: {}, messages: [] };
 
-// Muat data dari file database.json jika ada
 if (fs.existsSync(dbFile)) {
     try {
         const rawData = fs.readFileSync(dbFile);
@@ -41,7 +40,6 @@ if (fs.existsSync(dbFile)) {
     }
 }
 
-// Fungsi Simpan Database ke File
 function saveDB() {
     fs.writeFileSync(dbFile, JSON.stringify(db, null, 2));
 }
@@ -56,7 +54,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 }, storage });
 
-// Helper Avatar
 const getRandomAvatar = () => {
     const ids = [1506794778202, 1534528741775, 1542156822, 1522075469751, 1535713875002];
     const id = ids[Math.floor(Math.random() * ids.length)];
@@ -69,9 +66,8 @@ app.post('/api/login', (req, res) => {
     if (!username || !password) return res.status(400).json({ error: 'Nama dan sandi wajib diisi!' });
 
     if (!db.users[username]) {
-        // Buat Akun Baru
         db.users[username] = { password, socketId: null, isOnline: false, avatar: getRandomAvatar() };
-        saveDB(); // Simpan permanen
+        saveDB(); 
     } else if (db.users[username].password !== password) {
         return res.status(401).json({ error: 'Sandi salah, Bos!' });
     }
@@ -111,7 +107,7 @@ io.on('connection', (socket) => {
             timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
         };
         db.messages.push(newMessage);
-        saveDB(); // Simpan chat ke file permanen
+        saveDB();
 
         if (db.users[receiver] && db.users[receiver].isOnline) {
             io.to(db.users[receiver].socketId).emit('receive_message', newMessage);

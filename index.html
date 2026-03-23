@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAW.PICS - Full Responsive Brutalism</title>
     
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,7 +23,6 @@
         }
     </script>
 
-    <!-- Lucide Icons & Socket.io Client -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="/socket.io/socket.io.js"></script>
 
@@ -211,7 +207,7 @@
     <script>
         lucide.createIcons();
 
-        const API_URL = window.location.origin + '/api';
+        // KONEKSI LANGSUNG: Tidak butuh var API_URL lagi, karena HTML-nya udah nempel di server yang sama
         let socket;
         let currentUser = null; 
         let selectedTarget = null; 
@@ -246,7 +242,8 @@
             const errBox = document.getElementById('login-error');
 
             try {
-                const res = await fetch(`${API_URL}/login`, {
+                // LANGSUNG PANGGIL PATH RELATIF (/api/login)
+                const res = await fetch(`/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -255,7 +252,6 @@
                 
                 if (res.ok) {
                     currentUser = { username: data.username, avatar: data.avatar };
-                    // Simpan sesi ke browser
                     localStorage.setItem('rawchat_session', JSON.stringify(currentUser));
                     
                     document.getElementById('my-name-display').innerText = currentUser.username;
@@ -274,7 +270,7 @@
 
         function logout() {
             if(socket) socket.disconnect();
-            localStorage.removeItem('rawchat_session'); // Hapus sesi saat logout
+            localStorage.removeItem('rawchat_session');
             location.reload(); 
         }
 
@@ -284,7 +280,7 @@
             views.app.classList.remove('hidden');
             views.app.classList.add('flex');
 
-            socket = io();
+            socket = io(); // Socket otomatis konek ke URL asal web dibuka
             socket.on('connect', () => socket.emit('join', currentUser.username));
 
             socket.on('users_update', (usersList) => {
@@ -362,7 +358,8 @@
             msgContainer.innerHTML = '<div class="text-center font-bold text-gray-400 text-xs md:text-sm my-4">MEMUAT RIWAYAT...</div>';
 
             try {
-                const res = await fetch(`${API_URL}/messages/${currentUser.username}/${username}`);
+                // LANGSUNG PANGGIL PATH RELATIF (/api/messages/...)
+                const res = await fetch(`/api/messages/${currentUser.username}/${username}`);
                 const history = await res.json();
                 
                 msgContainer.innerHTML = '';
@@ -413,10 +410,10 @@
                 `;
             }
             if (msg.photo) {
-                const imgUrl = msg.photo.startsWith('http') ? msg.photo : window.location.origin + msg.photo;
+                // NGGAK PERLU URL PANJANG LAGI: <img> ngerti kalau string diawali "/uploads/"
                 contentHTML = `
                     <div class="border-[3px] md:border-4 border-black p-1 bg-white relative max-w-[220px] md:max-w-xs">
-                        <img src="${imgUrl}" class="w-full h-auto object-cover border-2 border-black">
+                        <img src="${msg.photo}" class="w-full h-auto object-cover border-2 border-black">
                     </div>
                 `;
             }
@@ -504,7 +501,8 @@
             formData.append('photo', selectedFile);
 
             try {
-                const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+                // LANGSUNG PANGGIL PATH RELATIF (/api/upload)
+                const res = await fetch(`/api/upload`, { method: 'POST', body: formData });
                 const data = await res.json();
                 
                 if (res.ok && data.photoUrl) {
